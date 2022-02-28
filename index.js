@@ -74,8 +74,7 @@ function handleTouchstart(e) {
 
 function handleTouchmove(e) {
   e.preventDefault()
-  console.log(e.touches[0].clientY)
-  if (battingTeam == "red" && isWithinDistance(touchstart, ball, PIXEL_SHIM)) {
+  if (battingTeam == "red" && isClose(touchstart, ball, PIXEL_SHIM)) {
     pitchPath.push(
       {
         xPos: e.touches[0].clientX,
@@ -89,7 +88,7 @@ function handleTouchmove(e) {
   if (battingTeam == "blue") {
     batter.xPos = e.touches[0].clientX
     batter.yPos = e.touches[0].clientY
-    if (!isHitMidair && isWithinDistance(batter, ball, PIXEL_SHIM)) {
+    if (!isHitMidair && isClose(batter, ball, PIXEL_SHIM)) {
       isHitMidair = true
       ball.xVelocity = (ball.xPos - e.touches[0].clientX) * 2
       ball.yVelocity = (ball.yPos - e.touches[0].clientY) * 2
@@ -108,7 +107,7 @@ function drawCircle(object) {
 
 ///////////////////////////////////////////////////////////////
 
-function isWithinDistance(objectA, objectB, distance) {
+function isClose(objectA, objectB, distance) {
   return getDistance(objectA, objectB) < distance
 }
 
