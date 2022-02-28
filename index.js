@@ -50,22 +50,6 @@ function gameLoop() {
   setTimeout(gameLoop, MILLISECONDS_PER_FRAME)
 }
 
-/////////
-
-function moveBall() {
-  ball.xPos += ball.xVelocity
-  ball.yPos += ball.yVelocity
-  if (!isBlueBatting && isPitchMidair ) {
-    ball.xPos = pitchPath[0].xPos
-    ball.yPos = pitchPath[0].yPos
-    pitchPath.shift()
-    if (ball.yPos > canvas.height - canvas.height / 5) {
-      isPitchMidair = false
-      ball.yVelocity = 10
-    } 
-  }
-}
-
 function handleTouchstart(e) {
   touchstart.xPos = e.touches[0].clientX
   touchstart.yPos = e.touches[0].clientY  
@@ -89,8 +73,24 @@ function handleTouchmove(e) {
       }
     )
     if (e.touches[0].clientY > canvas.height - canvas.height / 5) {
-      // isPitchMidair = true
+      isPitchMidair = true
     }
+  }
+}
+
+/////////////////////
+
+function moveBall() {
+  ball.xPos += ball.xVelocity
+  ball.yPos += ball.yVelocity
+  if (!isBlueBatting && isPitchMidair ) {
+    ball.xPos = pitchPath[0].xPos
+    ball.yPos = pitchPath[0].yPos
+    pitchPath.shift()
+    if (ball.yPos > canvas.height - canvas.height / 5) {
+      isPitchMidair = false
+      ball.yVelocity = 10
+    } 
   }
 }
 
@@ -101,7 +101,6 @@ function drawCircle(object) {
   context.fill()
 }
 
-////////////////////////////
 
 ///////////////////////////////////////////////////////////////
 
