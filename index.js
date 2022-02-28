@@ -60,7 +60,8 @@ function handleTouchmove(e) {
   if (isBlueBatting && isPitchMidair) {
     handleUserBatting(e) 
   } if (!isBlueBatting && isClose(touchstart, ball, PIXEL_SHIM)) {
-    handleUserPitching(e)  
+    handleUserPitching(e)
+  }  
 }
 
 /////////////////////
@@ -85,7 +86,6 @@ function handleUserPitching(e) {
   if (e.touches[0].clientY > canvas.height - canvas.height / 5) {
     isPitchMidair = true
   }
-  }  
 }
 
 function moveBall() {
@@ -108,7 +108,6 @@ function drawCircle(object) {
   context.fillStyle = object.color
   context.fill()
 }
-
 
 ///////////////////////////////////////////////////////////////
 
