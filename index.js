@@ -11,7 +11,7 @@ let batter = {
 }
 let pitcher = {
   xPos: visualViewport.width / 2,
-  yPos: visualViewport.height / 3,
+  yPos: visualViewport.height / 4,
   color: "CornflowerBlue",
   radius: PLAYER_RADIUS
 }
@@ -19,7 +19,7 @@ let ball ={
   xPos: visualViewport.width / 2,
   yPos: pitcher.yPos + PIXEL_SHIM,
   xVelocity: 0,
-  yVelocity: 1,
+  yVelocity: 0,
   color: "White",
   radius: PLAYER_RADIUS / 2
 }
@@ -27,9 +27,9 @@ let touchstart = {
   xPos: 0,
   yPos: 0
 }
-let isBlueBatting = true
 let pitchPath = []
-let isPitchMidair = true
+let isBlueBatting = false
+let isPitchMidair = false
 
 function initializeGame() {
   let canvas = document.getElementById("canvas")
@@ -57,28 +57,36 @@ function handleTouchstart(e) {
 
 function handleTouchmove(e) {
   e.preventDefault()
-  if (isBlueBatting) {
-    batter.xPos = e.touches[0].clientX
-    batter.yPos = e.touches[0].clientY
-    if (isPitchMidair && isClose(batter, ball, PIXEL_SHIM)) {
-      isPitchMidair = false
-      ball.xVelocity = (ball.xPos - e.touches[0].clientX) * 2
-      ball.yVelocity = (ball.yPos - e.touches[0].clientY) * 2
-    }  
-  } else if (isClose(touchstart, ball, PIXEL_SHIM)) {
-    pitchPath.push(
-      {
-        xPos: e.touches[0].clientX,
-        yPos: e.touches[0].clientY
-      }
-    )
-    if (e.touches[0].clientY > canvas.height - canvas.height / 5) {
-      isPitchMidair = true
-    }
-  }
+  if (isBlueBatting && isPitchMidair) {
+    handleUserBatting(e) 
+  } if (!isBlueBatting && isClose(touchstart, ball, PIXEL_SHIM)) {
+    handleUserPitching(e)  
 }
 
 /////////////////////
+
+function handleUserBatting(e) {
+  batter.xPos = e.touches[0].clientX
+  batter.yPos = e.touches[0].clientY
+  if (isClose(batter, ball, PIXEL_SHIM)) {
+    isPitchMidair = false
+    ball.xVelocity = (ball.xPos - e.touches[0].clientX) * 2
+    ball.yVelocity = (ball.yPos - e.touches[0].clientY) * 2
+  } 
+}
+
+function handleUserPitching(e) {
+  pitchPath.push(
+    {
+      xPos: e.touches[0].clientX,
+      yPos: e.touches[0].clientY
+    }
+  )
+  if (e.touches[0].clientY > canvas.height - canvas.height / 5) {
+    isPitchMidair = true
+  }
+  }  
+}
 
 function moveBall() {
   ball.xPos += ball.xVelocity
