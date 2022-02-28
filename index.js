@@ -1,23 +1,25 @@
 const MILLISECONDS_PER_FRAME = 50
-const PIXEL_SHIM = visualViewport.width / 10
+const PIXEL_SHIM = visualViewport.width / 5
 const PLAYER_RADIUS = visualViewport.width / 20
 
 let context;
 let batter = {
   xPos: visualViewport.width / 2,
-  yPos: visualViewport.height - PIXEL_SHIM,
+  yPos: visualViewport.height - PIXEL_SHIM * 2,
   color: "IndianRed",
   radius: PLAYER_RADIUS
 }
 let pitcher = {
   xPos: visualViewport.width / 2,
-  yPos: PIXEL_SHIM,
+  yPos: visualViewport.height / 3,
   color: "CornflowerBlue",
   radius: PLAYER_RADIUS
 }
 let ball ={
   xPos: visualViewport.width / 2,
   yPos: pitcher.yPos + PIXEL_SHIM,
+  xVelocity: 0,
+  yVelocity: 1,
   color: "White",
   radius: PLAYER_RADIUS / 2
 }
@@ -25,9 +27,10 @@ let touchstart = {
   xPos: 0,
   yPos: 0
 }
-let battingTeam = "red"
+let battingTeam = "blue"
 let pitchPath = []
 let isPitchMidair = false
+let isHitMidair = false
 
 function initializeGame() {
   let canvas = document.getElementById("canvas")
@@ -50,12 +53,19 @@ function gameLoop() {
     pitchPath.shift()
     if (ball.yPos > canvas.height - canvas.height / 5) {
       isPitchMidair = false
+      ball.yVelocity = 10
     } 
   }
+  moveBall()
   setTimeout(gameLoop, MILLISECONDS_PER_FRAME)
 }
 
 /////////
+
+function moveBall() {
+  ball.xPos += ball.xVelocity
+  ball.yPos += ball.yVelocity
+}
 
 function handleTouchstart(e) {
   touchstart.xPos = e.touches[0].clientX
@@ -64,7 +74,8 @@ function handleTouchstart(e) {
 
 function handleTouchmove(e) {
   e.preventDefault()
-  if (battingTeam == "red" && isClose(touchstart, ball)) {
+  console.log(e.touches[0].clientY)
+  if (battingTeam == "red" && isWithinDistance(touchstart, ball, PIXEL_SHIM)) {
     pitchPath.push(
       {
         xPos: e.touches[0].clientX,
@@ -73,7 +84,16 @@ function handleTouchmove(e) {
     )
   }
   if (e.touches[0].clientY > canvas.height - canvas.height / 5) {
-    isPitchMidair = true
+    // isPitchMidair = true
+  }
+  if (battingTeam == "blue") {
+    batter.xPos = e.touches[0].clientX
+    batter.yPos = e.touches[0].clientY
+    if (!isHitMidair && isWithinDistance(batter, ball, PIXEL_SHIM)) {
+      isHitMidair = true
+      ball.xVelocity = (ball.xPos - e.touches[0].clientX) * 2
+      ball.yVelocity = (ball.yPos - e.touches[0].clientY) * 2
+    }  
   }
 }
 
@@ -86,11 +106,11 @@ function drawCircle(object) {
 
 ////////////////////////////
 
-function isClose(objectA, objectB) {
-  return getDistance(objectA, objectB) < PIXEL_SHIM * 2
-}
+///////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////
+function isWithinDistance(objectA, objectB, distance) {
+  return getDistance(objectA, objectB) < distance
+}
 
 function getDistance(objectA, objectB) {
   return (
@@ -99,6 +119,5 @@ function getDistance(objectA, objectB) {
       Math.abs(objectA.yPos - objectB.yPos) ** 2
     )
     ** 0.5
-
   )
 }

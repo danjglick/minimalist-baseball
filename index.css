@@ -10,6 +10,8 @@
   color: IndianRed
 }
 
-#scoreMedian {
-  color: White
+#scoreMedian, 
+#outs, 
+#strikes {
+  color: LightGrey
 }
