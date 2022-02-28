@@ -15,7 +15,7 @@ let pitcher = {
   color: "CornflowerBlue",
   radius: PLAYER_RADIUS
 }
-let ball ={
+let ball = {
   xPos: visualViewport.width / 2,
   yPos: pitcher.yPos + PIXEL_SHIM,
   xVelocity: 0,
@@ -43,6 +43,9 @@ function initializeGame() {
 
 function gameLoop() {
   context.clearRect(0, 0, canvas.width, canvas.height)
+  if (isBlueBatting && isPitchMidair) {
+    autoPitch()
+  }
   moveBall()
   drawCircle(batter)
   drawCircle(pitcher)
@@ -73,6 +76,7 @@ function handleUserBatting(e) {
     isPitchMidair = false
     ball.xVelocity = (ball.xPos - e.touches[0].clientX) * 2
     ball.yVelocity = (ball.yPos - e.touches[0].clientY) * 2
+    console.log(ball.yVelocity)
   } 
 }
 
@@ -88,10 +92,23 @@ function handleUserPitching(e) {
   }
 }
 
+function autoPitch() {
+  isPitchMidair = true
+  ball.yVelocity = 1
+}
+
+function switchBattingTeam() {
+  let isBlueBatting = !isBlueBatting
+  let pitcherColor = pitcher.color
+  let batterColor = batter.color
+  pitcher.color = batterColor
+  pitcher.color = pitcherColor
+}
+
 function moveBall() {
   ball.xPos += ball.xVelocity
   ball.yPos += ball.yVelocity
-  if (!isBlueBatting && isPitchMidair ) {
+  if (!isBlueBatting && isPitchMidair) {
     ball.xPos = pitchPath[0].xPos
     ball.yPos = pitchPath[0].yPos
     pitchPath.shift()
