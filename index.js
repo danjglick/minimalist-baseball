@@ -27,7 +27,7 @@ let touchstart = {
   xPos: 0,
   yPos: 0
 }
-let battingTeam = "blue"
+let isBlueBatting = true
 let pitchPath = []
 let isPitchMidair = false
 let isHitMidair = false
@@ -74,7 +74,7 @@ function handleTouchstart(e) {
 
 function handleTouchmove(e) {
   e.preventDefault()
-  if (battingTeam == "red" && isClose(touchstart, ball, PIXEL_SHIM)) {
+  if (!isBlueBatting && isClose(touchstart, ball, PIXEL_SHIM)) {
     pitchPath.push(
       {
         xPos: e.touches[0].clientX,
@@ -85,7 +85,7 @@ function handleTouchmove(e) {
   if (e.touches[0].clientY > canvas.height - canvas.height / 5) {
     // isPitchMidair = true
   }
-  if (battingTeam == "blue") {
+  if (isBlueBatting) {
     batter.xPos = e.touches[0].clientX
     batter.yPos = e.touches[0].clientY
     if (!isHitMidair && isClose(batter, ball, PIXEL_SHIM)) {
