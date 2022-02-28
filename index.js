@@ -29,8 +29,7 @@ let touchstart = {
 }
 let isBlueBatting = true
 let pitchPath = []
-let isPitchMidair = false
-let isHitMidair = false
+let isPitchMidair = true
 
 function initializeGame() {
   let canvas = document.getElementById("canvas")
@@ -44,19 +43,10 @@ function initializeGame() {
 
 function gameLoop() {
   context.clearRect(0, 0, canvas.width, canvas.height)
+  moveBall()
   drawCircle(batter)
   drawCircle(pitcher)
   drawCircle(ball)
-  if (isPitchMidair) {
-    ball.xPos = pitchPath[0].xPos
-    ball.yPos = pitchPath[0].yPos
-    pitchPath.shift()
-    if (ball.yPos > canvas.height - canvas.height / 5) {
-      isPitchMidair = false
-      ball.yVelocity = 10
-    } 
-  }
-  moveBall()
   setTimeout(gameLoop, MILLISECONDS_PER_FRAME)
 }
 
@@ -65,6 +55,15 @@ function gameLoop() {
 function moveBall() {
   ball.xPos += ball.xVelocity
   ball.yPos += ball.yVelocity
+  if (!isBlueBatting && isPitchMidair ) {
+    ball.xPos = pitchPath[0].xPos
+    ball.yPos = pitchPath[0].yPos
+    pitchPath.shift()
+    if (ball.yPos > canvas.height - canvas.height / 5) {
+      isPitchMidair = false
+      ball.yVelocity = 10
+    } 
+  }
 }
 
 function handleTouchstart(e) {
@@ -74,25 +73,24 @@ function handleTouchstart(e) {
 
 function handleTouchmove(e) {
   e.preventDefault()
-  if (!isBlueBatting && isClose(touchstart, ball, PIXEL_SHIM)) {
+  if (isBlueBatting) {
+    batter.xPos = e.touches[0].clientX
+    batter.yPos = e.touches[0].clientY
+    if (isPitchMidair && isClose(batter, ball, PIXEL_SHIM)) {
+      isPitchMidair = false
+      ball.xVelocity = (ball.xPos - e.touches[0].clientX) * 2
+      ball.yVelocity = (ball.yPos - e.touches[0].clientY) * 2
+    }  
+  } else if (isClose(touchstart, ball, PIXEL_SHIM)) {
     pitchPath.push(
       {
         xPos: e.touches[0].clientX,
         yPos: e.touches[0].clientY
       }
     )
-  }
-  if (e.touches[0].clientY > canvas.height - canvas.height / 5) {
-    // isPitchMidair = true
-  }
-  if (isBlueBatting) {
-    batter.xPos = e.touches[0].clientX
-    batter.yPos = e.touches[0].clientY
-    if (!isHitMidair && isClose(batter, ball, PIXEL_SHIM)) {
-      isHitMidair = true
-      ball.xVelocity = (ball.xPos - e.touches[0].clientX) * 2
-      ball.yVelocity = (ball.yPos - e.touches[0].clientY) * 2
-    }  
+    if (e.touches[0].clientY > canvas.height - canvas.height / 5) {
+      // isPitchMidair = true
+    }
   }
 }
 
