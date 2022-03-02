@@ -86,7 +86,6 @@ function handleTouchmove(e) {
   e.preventDefault()
   if (isBlueBatting) {
     handleUserBatting(e) 
-    
   } else {
     if (isHitMidair) {
       handleUserFielding(e)
