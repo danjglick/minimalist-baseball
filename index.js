@@ -10,7 +10,7 @@ let context;
 let batter = {
   xPos: visualViewport.width / 2,
   yPos: BATTER_YPOS,
-  color: "CornflowerBlue",
+  color: "IndianRed",
   radius: PLAYER_RADIUS
 }
 let pitcher = {
@@ -18,7 +18,7 @@ let pitcher = {
   yPos: visualViewport.height / 4,
   xVelocity: 0,
   yVelocity: 0,
-  color: "IndianRed",
+  color: "CornflowerBlue",
   radius: PLAYER_RADIUS
 }
 let ball = {
@@ -38,7 +38,7 @@ let strikes = 0
 let outs = 0
 let isPitchMidair = false
 let isHitMidair = false
-let isBlueBatting = true
+let isBlueBatting = false
 
 function initializeGame() {
   let canvas = document.getElementById("canvas")
@@ -172,11 +172,12 @@ function handleOut() {
   isHitMidair = false
   strikes = 0
   outs += 1
-  document.getElementById("outsNumber").innerHTML = String(outs)
   if (outs == 3) {
     switchBattingTeam()
     outs = 0
   }
+  document.getElementById("strikesNumber").innerHTML = String(strikes)
+  document.getElementById("outsNumber").innerHTML = String(outs)
   batter.xPos = visualViewport.width / 2
   batter.yPos = BATTER_YPOS
   pitcher.xPos = visualViewport.width / 2
