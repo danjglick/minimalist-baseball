@@ -1,6 +1,7 @@
 const MILLISECONDS_PER_FRAME = 50
 const PIXEL_SHIM = visualViewport.width / 5
 const PLAYER_RADIUS = visualViewport.width / 20
+const POST_BOUNCE_SPEED_MULTIPLIER = 0.9
 
 let context;
 let batter = {
@@ -28,8 +29,12 @@ let touchstart = {
   yPos: 0
 }
 let pitchPath = []
-let isBlueBatting = false
-let isPitchMidair = false
+let strikes = 0
+let outs = 0
+let isBlueBatting = true
+let isPitchMidair = true
+
+// INIT
 
 function initializeGame() {
   let canvas = document.getElementById("canvas")
@@ -46,6 +51,10 @@ function gameLoop() {
   if (isBlueBatting && isPitchMidair) {
     autoPitch()
   }
+  if (isStrike()) {
+    handleStrike()
+  }
+  bounceBallFromWall()
   moveBall()
   drawCircle(batter)
   drawCircle(pitcher)
@@ -67,16 +76,15 @@ function handleTouchmove(e) {
   }  
 }
 
-/////////////////////
+// PUBLIC
 
 function handleUserBatting(e) {
   batter.xPos = e.touches[0].clientX
   batter.yPos = e.touches[0].clientY
   if (isClose(batter, ball, PIXEL_SHIM)) {
     isPitchMidair = false
-    ball.xVelocity = (ball.xPos - e.touches[0].clientX) * 2
-    ball.yVelocity = (ball.yPos - e.touches[0].clientY) * 2
-    console.log(ball.yVelocity)
+    ball.xVelocity = (ball.xPos - e.touches[0].clientX)
+    ball.yVelocity = (ball.yPos - e.touches[0].clientY)
   } 
 }
 
@@ -92,29 +100,61 @@ function handleUserPitching(e) {
   }
 }
 
+function isStrike() {
+  if (isPitchMidair && ball.yPos > canvas.height) {
+    return true
+  }
+  return false
+}
+
+function handleStrike() {
+  strikes += 1
+  // isPitchMidair = false
+  document.getElementById("strikesNumber").innerHTML = String(strikes)
+  if (strikes == 3) {
+    outs += 1
+    document.getElementById("outsNumber").innerHTML = String(outs)
+    strikes = 0
+  }
+  ball.xPos = visualViewport.width / 2
+  ball.yPos = pitcher.yPos + PIXEL_SHIM
+  ball.xVelocity = 0
+  ball.yVelocity = 0
+}
+
+function bounceBallFromWall() {
+  if (
+    (ball.xPos < PIXEL_SHIM && ball.xVelocity < 0) || 
+    (ball.xPos > canvas.width - PIXEL_SHIM && ball.xVelocity > 0) 
+  ) {
+    ball.xVelocity = -ball.xVelocity * POST_BOUNCE_SPEED_MULTIPLIER
+  }
+  if (
+    (ball.yPos < PIXEL_SHIM && ball.yVelocity < 0) ||
+    (ball.yPos > canvas.height - PIXEL_SHIM && ball.yVelocity > 0 && isPitchMidair == false)
+  ) {
+    ball.yVelocity = -ball.yVelocity * POST_BOUNCE_SPEED_MULTIPLIER
+  }
+}
+
+function handleBallInWall() {}
+
 function autoPitch() {
   isPitchMidair = true
   ball.yVelocity = 1
-}
-
-function switchBattingTeam() {
-  let isBlueBatting = !isBlueBatting
-  let pitcherColor = pitcher.color
-  let batterColor = batter.color
-  pitcher.color = batterColor
-  pitcher.color = pitcherColor
 }
 
 function moveBall() {
   ball.xPos += ball.xVelocity
   ball.yPos += ball.yVelocity
   if (!isBlueBatting && isPitchMidair) {
-    ball.xPos = pitchPath[0].xPos
-    ball.yPos = pitchPath[0].yPos
-    pitchPath.shift()
-    if (ball.yPos > canvas.height - canvas.height / 5) {
-      isPitchMidair = false
-      ball.yVelocity = 10
+    if (pitchPath[0]) {
+      ball.xPos = pitchPath[0].xPos
+      ball.yPos = pitchPath[0].yPos
+      pitchPath.shift()
+      if (ball.yPos > canvas.height - canvas.height / 5) {
+        ball.yVelocity = 10
+      }
     } 
   }
 }
@@ -126,7 +166,17 @@ function drawCircle(object) {
   context.fill()
 }
 
-///////////////////////////////////////////////////////////////
+// PRIVATE
+
+function switchBattingTeam() {
+  let isBlueBatting = !isBlueBatting
+  let pitcherColor = pitcher.color
+  let batterColor = batter.color
+  pitcher.color = batterColor
+  pitcher.color = pitcherColor
+}
+
+// GENERIC
 
 function isClose(objectA, objectB, distance) {
   return getDistance(objectA, objectB) < distance
