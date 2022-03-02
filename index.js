@@ -1,12 +1,15 @@
 const MILLISECONDS_PER_FRAME = 50
+const MILLISECONDS_BEFORE_PITCH = 1000
 const PIXEL_SHIM = visualViewport.width / 5
 const PLAYER_RADIUS = visualViewport.width / 20
 const POST_BOUNCE_SPEED_DIVISOR = 1.1
+const AUTOBAT_SPEED_DIVISOR = 10
+const BATTER_YPOS = visualViewport.height - PIXEL_SHIM * 2
 
 let context;
 let batter = {
   xPos: visualViewport.width / 2,
-  yPos: visualViewport.height - PIXEL_SHIM * 2,
+  yPos: BATTER_YPOS,
   color: "CornflowerBlue",
   radius: PLAYER_RADIUS
 }
@@ -32,7 +35,7 @@ let pitchPath = []
 let strikes = 0
 let outs = 0
 let isPitchMidair = false
-let isBlueBatting = true
+let isBlueBatting = false
 
 // INIT
 
@@ -44,6 +47,11 @@ function initializeGame() {
   document.addEventListener("touchstart", handleTouchstart)
   document.addEventListener("touchmove", handleTouchmove, { passive: false })
   gameLoop()
+}
+
+function handleTouchstart(e) {
+  touchstart.xPos = e.touches[0].clientX
+  touchstart.yPos = e.touches[0].clientY  
 }
 
 function handleTouchmove(e) {
@@ -63,7 +71,7 @@ function gameLoop() {
   context.clearRect(0, 0, canvas.width, canvas.height)
   if (isBlueBatting) {
     if (isClose(ball, pitcher, PIXEL_SHIM)) {
-      setTimeout(autoPitch, 1000)
+      setTimeout(autoPitch, MILLISECONDS_BEFORE_PITCH)
     }
   } else {
     if (isPitchMidair) {
@@ -81,11 +89,6 @@ function gameLoop() {
   setTimeout(gameLoop, MILLISECONDS_PER_FRAME)
 }
 
-function handleTouchstart(e) {
-  touchstart.xPos = e.touches[0].clientX
-  touchstart.yPos = e.touches[0].clientY  
-}
-
 // PUBLIC
 
 function handleUserBatting(e) {
@@ -101,8 +104,23 @@ function handleUserPitching(e) {
       yPos: e.touches[0].clientY
     }
   )
-  if (e.touches[0].clientY > canvas.height - canvas.height / 5) {
+  if (e.touches[0].clientY > BATTER_YPOS) {
     isPitchMidair = true
+  }
+}
+
+function autoPitch() {
+  isPitchMidair = true
+  ball.yVelocity = 5
+}
+
+function autoBat() {
+  batter.xPos += (ball.xPos - batter.xPos) / AUTOBAT_SPEED_DIVISOR
+  if (ball.yPos > canvas.height - canvas.height / 4) {
+    swingBat()
+  }
+  if (ball.yPos > canvas.height) {
+    handleStrike()
   }
 }
 
@@ -127,11 +145,12 @@ function handleStrike() {
 }
 
 function handleOut() {
+  strikes = 0
   outs += 1
   document.getElementById("outsNumber").innerHTML = String(outs)
-  strikes = 0
   if (outs == 3) {
     switchBattingTeam()
+    outs = 0
   }  
 }
 
@@ -154,7 +173,7 @@ function bounceBallFromWall() {
       ball.yPos < PIXEL_SHIM && 
       ball.yVelocity < 0
     ) 
-      ||
+    ||
     (
       ball.yPos > canvas.height - PIXEL_SHIM && 
       ball.yVelocity > 0 && 
@@ -162,21 +181,6 @@ function bounceBallFromWall() {
     )
   ) {
     ball.yVelocity = -ball.yVelocity / POST_BOUNCE_SPEED_DIVISOR
-  }
-}
-
-function autoPitch() {
-  isPitchMidair = true
-  ball.yVelocity = 5
-}
-
-function autoBat() {
-  batter.xPos += (ball.xPos - batter.xPos) / 10
-  if (ball.yPos > canvas.height - canvas.height / 4) {
-    swingBat()
-  }
-  if (ball.yPos > canvas.height) {
-    handleStrike()
   }
 }
 
@@ -188,7 +192,7 @@ function moveBall() {
       ball.xPos = pitchPath[0].xPos
       ball.yPos = pitchPath[0].yPos
       pitchPath.shift()
-      if (ball.yPos > canvas.height - canvas.height / 5) {
+      if (ball.yPos > BATTER_YPOS) {
         ball.yVelocity = 10
       }
     } 
@@ -204,20 +208,20 @@ function drawCircle(object) {
 
 // PRIVATE
 
-function switchBattingTeam() {
-  isBlueBatting = !isBlueBatting
-  let pitcherColor = pitcher.color
-  let batterColor = batter.color
-  pitcher.color = batterColor
-  pitcher.color = pitcherColor
-}
-
 function swingBat() {
   if (isClose(batter, ball, PIXEL_SHIM)) {
     isPitchMidair = false
     ball.xVelocity = (ball.xPos - batter.xPos)
     ball.yVelocity = (ball.yPos - batter.yPos)
   }   
+}
+
+function switchBattingTeam() {
+  isBlueBatting = !isBlueBatting
+  let pitcherColor = pitcher.color
+  let batterColor = batter.color
+  batter.color = pitcherColor
+  pitcher.color = batterColor
 }
 
 // GENERIC
