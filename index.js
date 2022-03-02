@@ -16,6 +16,8 @@ let batter = {
 let pitcher = {
   xPos: visualViewport.width / 2,
   yPos: visualViewport.height / 4,
+  xVelocity: 0,
+  yVelocity: 0,
   color: "IndianRed",
   radius: PLAYER_RADIUS
 }
@@ -78,6 +80,9 @@ function gameLoop() {
     if (isClose(ball, pitcher, PIXEL_SHIM)) {
       setTimeout(autoPitch, MILLISECONDS_BEFORE_PITCH)
     }
+    if (isHitMidair) {
+      autoField()
+    }
   } else {
     if (isPitchMidair) {
       autoBat()
@@ -118,7 +123,6 @@ function handleUserFielding(e) {
   pitcher.xPos = e.touches[0].clientX
   pitcher.yPos = e.touches[0].clientY
   if (isClose(ball, pitcher, PIXEL_SHIM)) {
-    isHitMidair = false
     handleOut()
   }
 }
@@ -136,6 +140,14 @@ function autoBat() {
 function autoPitch() {
   isPitchMidair = true
   ball.yVelocity = 5
+}
+
+function autoField() {
+  pitcher.xPos += (ball.xPos - pitcher.xPos) / AUTOBAT_SPEED_DIVISOR
+  pitcher.yPos += (ball.yPos - pitcher.yPos) / AUTOBAT_SPEED_DIVISOR
+  if (isClose(pitcher, ball, PIXEL_SHIM)) {
+    handleOut()
+  }  
 }
 
 function isStrike() {
@@ -159,6 +171,7 @@ function handleStrike() {
 }
 
 function handleOut() {
+  isHitMidair = false
   strikes = 0
   outs += 1
   document.getElementById("outsNumber").innerHTML = String(outs)
