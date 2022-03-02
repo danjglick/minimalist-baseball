@@ -59,7 +59,7 @@ function gameLoop() {
       setTimeout(autoPitch, MILLISECONDS_BEFORE_PITCH)
     }
     if (isHitMidair) {
-      // autoField()
+      autoField()
     }
   } else {
     if (isPitchMidair) {
