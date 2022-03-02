@@ -35,6 +35,7 @@ let pitchPath = []
 let strikes = 0
 let outs = 0
 let isPitchMidair = false
+let isHitMidair = false
 let isBlueBatting = false
 
 // INIT
@@ -61,8 +62,12 @@ function handleTouchmove(e) {
       handleUserBatting(e) 
     }
   } else {
-    if (isClose(touchstart, ball, PIXEL_SHIM)) {
-      handleUserPitching(e)
+    if (isHitMidair) {
+      handleUserFielding(e)
+    } else {
+      if (isClose(touchstart, ball, PIXEL_SHIM)) {
+        handleUserPitching(e)
+      }
     }
   }  
 }
@@ -109,9 +114,13 @@ function handleUserPitching(e) {
   }
 }
 
-function autoPitch() {
-  isPitchMidair = true
-  ball.yVelocity = 5
+function handleUserFielding(e) {
+  pitcher.xPos = e.touches[0].clientX
+  pitcher.yPos = e.touches[0].clientY
+  if (isClose(ball, pitcher, PIXEL_SHIM)) {
+    isHitMidair = false
+    handleOut()
+  }
 }
 
 function autoBat() {
@@ -122,6 +131,11 @@ function autoBat() {
   if (ball.yPos > canvas.height) {
     handleStrike()
   }
+}
+
+function autoPitch() {
+  isPitchMidair = true
+  ball.yVelocity = 5
 }
 
 function isStrike() {
@@ -151,7 +165,15 @@ function handleOut() {
   if (outs == 3) {
     switchBattingTeam()
     outs = 0
-  }  
+  }
+  batter.xPos = visualViewport.width / 2
+  batter.yPos = BATTER_YPOS
+  pitcher.xPos = visualViewport.width / 2
+  pitcher.yPos = visualViewport.height / 4
+  ball.xPos = visualViewport.width / 2
+  ball.yPos = pitcher.yPos + PIXEL_SHIM
+  ball.xVelocity = 0
+  ball.yVelocity = 0
 }
 
 function bounceBallFromWall() {
@@ -210,6 +232,7 @@ function drawCircle(object) {
 
 function swingBat() {
   if (isClose(batter, ball, PIXEL_SHIM)) {
+    isHitMidair = true
     isPitchMidair = false
     ball.xVelocity = (ball.xPos - batter.xPos)
     ball.yVelocity = (ball.yPos - batter.yPos)
