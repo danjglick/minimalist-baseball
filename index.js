@@ -7,13 +7,13 @@ let context;
 let batter = {
   xPos: visualViewport.width / 2,
   yPos: visualViewport.height - PIXEL_SHIM * 2,
-  color: "IndianRed",
+  color: "CornflowerBlue",
   radius: PLAYER_RADIUS
 }
 let pitcher = {
   xPos: visualViewport.width / 2,
   yPos: visualViewport.height / 4,
-  color: "CornflowerBlue",
+  color: "IndianRed",
   radius: PLAYER_RADIUS
 }
 let ball = {
