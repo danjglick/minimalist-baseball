@@ -3,7 +3,7 @@ const MILLISECONDS_BEFORE_PITCH = 1000
 const PIXEL_SHIM = visualViewport.width / 5
 const PLAYER_RADIUS = visualViewport.width / 20
 const POST_BOUNCE_SPEED_DIVISOR = 1.1
-const AUTOBAT_SPEED_DIVISOR = 10
+const AUTOBAT_SPEED_DIVISOR = 20
 const BATTER_YPOS = visualViewport.height - PIXEL_SHIM * 2
 
 let context;
@@ -38,9 +38,7 @@ let strikes = 0
 let outs = 0
 let isPitchMidair = false
 let isHitMidair = false
-let isBlueBatting = false
-
-// INIT
+let isBlueBatting = true
 
 function initializeGame() {
   let canvas = document.getElementById("canvas")
@@ -52,27 +50,7 @@ function initializeGame() {
   gameLoop()
 }
 
-function handleTouchstart(e) {
-  touchstart.xPos = e.touches[0].clientX
-  touchstart.yPos = e.touches[0].clientY  
-}
-
-function handleTouchmove(e) {
-  e.preventDefault()
-  if (isBlueBatting) {
-    if (isPitchMidair) {
-      handleUserBatting(e) 
-    }
-  } else {
-    if (isHitMidair) {
-      handleUserFielding(e)
-    } else {
-      if (isClose(touchstart, ball, PIXEL_SHIM)) {
-        handleUserPitching(e)
-      }
-    }
-  }  
-}
+// INIT
 
 function gameLoop() {
   context.clearRect(0, 0, canvas.width, canvas.height)
@@ -81,7 +59,7 @@ function gameLoop() {
       setTimeout(autoPitch, MILLISECONDS_BEFORE_PITCH)
     }
     if (isHitMidair) {
-      autoField()
+      // autoField()
     }
   } else {
     if (isPitchMidair) {
@@ -97,6 +75,27 @@ function gameLoop() {
   drawCircle(pitcher)
   drawCircle(ball)
   setTimeout(gameLoop, MILLISECONDS_PER_FRAME)
+}
+
+function handleTouchstart(e) {
+  touchstart.xPos = e.touches[0].clientX
+  touchstart.yPos = e.touches[0].clientY  
+}
+
+function handleTouchmove(e) {
+  e.preventDefault()
+  if (isBlueBatting) {
+    handleUserBatting(e) 
+    
+  } else {
+    if (isHitMidair) {
+      handleUserFielding(e)
+    } else {
+      if (isClose(touchstart, ball, PIXEL_SHIM)) {
+        handleUserPitching(e)
+      }
+    }
+  }  
 }
 
 // PUBLIC
@@ -138,8 +137,8 @@ function autoBat() {
 }
 
 function autoPitch() {
-  isPitchMidair = true
   ball.yVelocity = 5
+  isPitchMidair = true
 }
 
 function autoField() {
