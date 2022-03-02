@@ -31,8 +31,8 @@ let touchstart = {
 let pitchPath = []
 let strikes = 0
 let outs = 0
-let isBlueBatting = true
-let isPitchMidair = true
+let isBlueBatting = false
+let isPitchMidair = false
 
 // INIT
 
@@ -48,8 +48,14 @@ function initializeGame() {
 
 function gameLoop() {
   context.clearRect(0, 0, canvas.width, canvas.height)
-  if (isBlueBatting && isPitchMidair) {
-    autoPitch()
+  if (isBlueBatting) {
+    if (isPitchMidair) {
+      autoPitch()
+    }
+  } else {
+    if (isPitchMidair) {
+      autoBat()
+    }
   }
   if (isStrike()) {
     handleStrike()
@@ -69,10 +75,14 @@ function handleTouchstart(e) {
 
 function handleTouchmove(e) {
   e.preventDefault()
-  if (isBlueBatting && isPitchMidair) {
-    handleUserBatting(e) 
-  } if (!isBlueBatting && isClose(touchstart, ball, PIXEL_SHIM)) {
-    handleUserPitching(e)
+  if (isBlueBatting) {
+    if (isPitchMidair) {
+      handleUserBatting(e) 
+    }
+  } else {
+    if (isClose(touchstart, ball, PIXEL_SHIM)) {
+      handleUserPitching(e)
+    }
   }  
 }
 
@@ -81,11 +91,7 @@ function handleTouchmove(e) {
 function handleUserBatting(e) {
   batter.xPos = e.touches[0].clientX
   batter.yPos = e.touches[0].clientY
-  if (isClose(batter, ball, PIXEL_SHIM)) {
-    isPitchMidair = false
-    ball.xVelocity = (ball.xPos - e.touches[0].clientX)
-    ball.yVelocity = (ball.yPos - e.touches[0].clientY)
-  } 
+  swingBat()
 }
 
 function handleUserPitching(e) {
@@ -144,6 +150,16 @@ function autoPitch() {
   ball.yVelocity = 1
 }
 
+function autoBat() {
+  batter.xPos += (ball.xPos - batter.xPos) / 10
+  if (ball.yPos > canvas.height - canvas.height / 4) {
+    swingBat()
+  }
+  if (ball.yPos > canvas.height) {
+    handleStrike()
+  }
+}
+
 function moveBall() {
   ball.xPos += ball.xVelocity
   ball.yPos += ball.yVelocity
@@ -174,6 +190,14 @@ function switchBattingTeam() {
   let batterColor = batter.color
   pitcher.color = batterColor
   pitcher.color = pitcherColor
+}
+
+function swingBat() {
+  if (isClose(batter, ball, PIXEL_SHIM)) {
+    isPitchMidair = false
+    ball.xVelocity = (ball.xPos - batter.xPos)
+    ball.yVelocity = (ball.yPos - batter.yPos)
+  }   
 }
 
 // GENERIC
